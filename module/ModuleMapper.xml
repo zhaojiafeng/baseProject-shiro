@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssm.module.mapper.ModuleMapper">
+
+    <resultMap id="BaseResultMap" type="com.ssm.module.bean.Module">
+        <id column="module_id" jdbcType="INTEGER" property="moduleId"/>
+        <result column="module_name" jdbcType="VARCHAR" property="moduleName"/>
+    </resultMap>
+
+
+    <insert id="addModule" parameterType="com.ssm.module.bean.Module">
+        insert into tb_module
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="moduleId != null">
+                module_id,
+            </if>
+            <if test="moduleName != null">
+                module_name,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="moduleId != null">
+                #{moduleId,jdbcType=INTEGER},
+            </if>
+            <if test="moduleName != null">
+                #{moduleName,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+
+    <delete id="deleteModule" parameterType="java.lang.Integer">
+        DELETE FROM tb_module
+        WHERE module_id = #{moduleId,jdbcType=INTEGER}
+    </delete>
+
+    <update id="editModule" parameterType="com.ssm.module.bean.Module">
+        update tb_module
+        <set>
+            <if test="moduleName != null">
+                module_name = #{moduleName,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where module_id = #{moduleId,jdbcType=INTEGER}
+    </update>
+
+    <select id="findModules" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from tb_module
+        <where>
+            1=1
+            <if test="moduleId != null">
+                and module_id = #{moduleId,jdbcType=INTEGER}
+            </if>
+            <if test="moduleName != null">
+                and module_name like '%${moduleName}%'
+            </if>
+        </where>
+
+    </select>
+
+    <insert id="addRoleIdAndModuleIds" parameterType="java.lang.Integer">
+        INSERT INTO role_module (role_id, module_id) VALUE
+        <if test="moduleIds != null">
+            <foreach collection="moduleIds" index="index" item="moduleId" separator=",">
+                (#{roleId,jdbcType=INTEGER},#{moduleId,jdbcType=INTEGER})
+            </foreach>
+        </if>
+    </insert>
+
+    <delete id="deleteRoleIdAndModuleIds" parameterType="java.lang.Integer">
+        delete from role_module
+        <where>
+            <if test="roleId != null">
+                role_id = #{roleId,jdbcType=INTEGER} and
+            </if>
+            <if test="moduleIds != null">
+                <foreach collection="moduleIds" index="index" item="moduleId" open=" module_id in (" close=")"
+                         separator=",">
+                    #{moduleId,jdbcType=INTEGER}
+                </foreach>
+            </if>
+        </where>
+    </delete>
+
+    <select id="findModuleIdsInRoleModule">
+        SELECT *
+        FROM role_module
+        <where>
+            <foreach collection="roleIds" index="index" item="roleId" open=" role_id in (" close=")"
+                     separator=",">
+                #{roleId,jdbcType=INTEGER}
+            </foreach>
+        </where>
+    </select>
+</mapper>
